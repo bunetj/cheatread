@@ -1,0 +1,164 @@
+// shared/text.js — shared text helpers (extracted verbatim from apps)
+// Apps must NOT redefine these locally.
+
+function splitByBlankLines(text) {
+    return text.split(/\n\s*\n/).filter(s => s.trim() !== '');
+}
+
+function splitBySeparator(text, sep) {
+    // sep is a string like '\n---\n'; kept explicit so Telegram and
+    // Subtitles/LED can use different delimiters without forking logic.
+    return text.split(sep).filter(s => s.trim() !== '');
+}
+
+function splitWords(text, n) {
+    const words = text.split(/\s+/).filter(w => w.length > 0);
+    const chunks = [];
+    for (let i = 0; i < words.length; i += n) {
+        chunks.push(words.slice(i, i + n).join(' '));
+    }
+    return chunks;
+}
+
+function toLower(text) {
+    let output = text.replace(/—/g, '-').replace(/–/g, '-').replace(/ -- /g, ' - ');
+    output = output.replace(/[""]/g, '"').replace(/['']/g, "'").replace(/[‚‛]/g, "'")
+        .replace(/[„“”]/g, '"').replace(/[’‘]/g, "'").replace(/[‹›]/g, "'")
+        .replace(/[«»]/g, '"');
+    const parts = output.split(/(\s+)/);
+    const result = [];
+    for (let i = 0; i < parts.length; i++) {
+        const p = parts[i];
+        if (!/[a-zA-Zа-яА-Я]/.test(p)) { result.push(p); continue; }
+        const latinOnly = p.replace(/[^a-zA-Z]/g, '');
+        const isLatinCaps = latinOnly.length >= 2 && latinOnly === latinOnly.toUpperCase();
+        const cyrOnly = p.replace(/[^а-яА-Я]/g, '');
+        const isCyrCaps = cyrOnly.length >= 2 && cyrOnly === cyrOnly.toUpperCase();
+        if (isLatinCaps || isCyrCaps) { result.push(p); continue; }
+        result.push(p.toLowerCase());
+    }
+    return result.join('');
+}
+
+function removePunctuation(text) {
+    return text.replace(/[^\w\s\n]/g, '');
+}
+
+// Normalize curly quotes / apostrophes to plain ASCII forms.
+// Runs inside applyLow, always (not gated on lowercase).
+function normalizeQuotes(text) {
+    return text
+        .replace(/[\u201C\u201D\u201E\u201F\u00AB\u00BB\u2039\u203A]/g, '"')
+        .replace(/[\u2018\u2019\u201A\u201B\u2032\u02BC\u02B9]/g, "'");
+}
+
+// splitPunct(text, opts)
+//   opts.strip === true  -> remove trailing punct marks from each piece
+//   opts.strip === false -> keep them attached
+// Rules:
+//   * split on . , ! ? ; : only when followed by whitespace or EOL
+//   * never split at ' or at quote chars
+//   * never split when the punct is between two non-space chars (i.e. / 10:30)
+function splitPunct(text, opts) {
+    opts = opts || {};
+    var strip = (opts.strip !== false); // default true
+    var punctClass = '.!?;:,';
+    var quoteClass = '\'"\u201C\u201D\u2018\u2019\u00AB\u00BB\u2039\u203A';
+    var pieces = [];
+    var current = '';
+    var i = 0;
+    while (i < text.length) {
+        var c = text[i];
+        current += c;
+        if (punctClass.indexOf(c) !== -1) {
+            var prev = i > 0 ? text[i - 1] : '';
+            var next = text[i + 1];
+            var nextOk = (next === undefined) || /\s/.test(next);
+            // between-two-symbols guard: if prev is a non-space, non-quote,
+            // non-punct letter/digit AND next is a non-space letter/digit,
+            // do not split (covers i.e. , 10:30 , 1.5 , urls).
+            var betweenSymbols = false;
+            if (prev && next &&
+                !/\s/.test(prev) && !/\s/.test(next) &&
+                quoteClass.indexOf(prev) === -1 &&
+                quoteClass.indexOf(next) === -1 &&
+                punctClass.indexOf(prev) === -1) {
+                betweenSymbols = true;
+            }
+            // apostrophe / quote as the punct char itself: never a split trigger
+            var isQuote = quoteClass.indexOf(c) !== -1;
+            if (!isQuote && nextOk && !betweenSymbols) {
+                pieces.push(current);
+                current = '';
+            }
+        }
+        i++;
+    }
+    if (current) pieces.push(current);
+
+    var out = [];
+    for (var k = 0; k < pieces.length; k++) {
+        var p = pieces[k];
+        if (strip) {
+            // strip trailing punct marks and surrounding whitespace
+            p = p.replace(/[.!?;:,]+$/g, '').trim();
+        } else {
+            p = p.replace(/\s+$/g, '').replace(/^\s+/g, '');
+        }
+        if (p) out.push(p);
+    }
+    return out;
+}
+
+// Split on a dash acting as message separator.
+// Recognized: ' - ', ' – ', ' — ', and bare '—' / '–' (no surrounding spaces).
+// The dash is removed.
+function splitOnDashes(text) {
+    // order matters: em/en dash first (they may appear without spaces),
+    // then space-hyphen-space.
+    var parts = text.split(/\s*[\u2014\u2013]\s*|\s+-\s+/);
+    var out = [];
+    for (var i = 0; i < parts.length; i++) {
+        var p = parts[i].replace(/^\s+|\s+$/g, '');
+        if (p) out.push(p);
+    }
+    return out;
+}
+
+function splitSentences(text) {
+    const result = [];
+    let start = 0;
+    let i = 0;
+    while (i < text.length) {
+        if (text[i] === '…' || (text[i] === '.' && text[i + 1] === '.' && text[i + 2] === '.')) {
+            const len = text[i] === '…' ? 1 : 3;
+            const next = text[i + len] || '';
+            if (next === ' ' || next === '\n' || next === '\t' || !next) {
+                result.push(text.slice(start, i + len));
+                start = i + len;
+                i += len;
+                continue;
+            }
+        }
+        if (text[i] === '.' || text[i] === '!' || text[i] === '?') {
+            const next = text[i + 1] || '';
+            if (next === ' ' || next === '\n' || next === '\t' || !next) {
+                result.push(text.slice(start, i + 1));
+                start = i + 1;
+            }
+        }
+        i++;
+    }
+    if (start < text.length) result.push(text.slice(start));
+    return result.length ? result : [text];
+}
+
+function applyLow(text, settings) {
+    let result = text;
+    // quote normalization always runs when LOW is applied
+    result = normalizeQuotes(result);
+    if (settings.lowercase) result = toLower(result);
+    if (settings.noPunct) result = removePunctuation(result);
+    if (settings.oneLine) result = result.replace(/\s+/g, ' ').trim();
+    return result;
+}

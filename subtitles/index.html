@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <title>subtitles simulator</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #141414;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: #e8edf2;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .app {
+            width: 100%;
+            max-width: 640px;
+            height: 100vh;
+            max-height: 500px;
+            display: flex;
+            flex-direction: column;
+            padding: 8px;
+            gap: 8px;
+        }
+
+        .textbox-area {
+            flex-shrink: 0;
+        }
+
+        .textbox-area textarea {
+            width: 100%;
+            height: 70px;
+            padding: 10px 14px;
+            background: #262626;
+            border: 1px solid #333333;
+            border-radius: 12px;
+            color: #e8edf2;
+            font-size: 13px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .textbox-area textarea:focus {
+            outline: none;
+        }
+
+        .textbox-area textarea::placeholder {
+            color: #5e6f7e;
+        }
+
+        .toolbar {
+            flex-shrink: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            background: #262626;
+            border-radius: 12px;
+            padding: 6px 10px;
+            border: 1px solid #333333;
+            align-items: center;
+        }
+
+        .menu-section {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            padding: 0 4px;
+            border-right: 1px solid #333333;
+        }
+
+        .menu-section:last-child {
+            border-right: none;
+        }
+
+        .menu-label {
+            font-size: 10px;
+            color: #5e6f7e;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-right: 4px;
+            font-weight: 600;
+        }
+
+        .menu-btn {
+            background: transparent;
+            border: none;
+            color: #8e9aa5;
+            padding: 3px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .menu-label-display {
+            font-size: 11px;
+            color: #8e9aa5;
+            min-width: 28px;
+            text-align: center;
+        }
+
+        .menu-range {
+            width: 60px;
+            accent-color: #7a7a7a;
+            background: #333333;
+            height: 4px;
+            border-radius: 2px;
+        }
+
+        .menu-range::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #7a7a7a;
+            cursor: pointer;
+        }
+
+        .menu-range::-moz-range-thumb {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #7a7a7a;
+            border: none;
+            cursor: pointer;
+        }
+
+        .menu-input-label {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            font-weight: 400;
+            color: #8e9aa5;
+        }
+
+        .menu-input-label input {
+            width: 48px;
+            padding: 2px 12px 2px 8px;
+            background: #333333;
+            border: none;
+            border-radius: 4px;
+            color: #e8edf2;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .menu-input-label input:focus {
+            outline: 1px solid #7a7a7a;
+        }
+
+        .sub-wrap {
+            flex: 1;
+            background: #1c1c1c;
+            border-radius: 16px;
+            border: 1px solid #333333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            min-height: 0;
+        }
+
+        .sub-text {
+            background: #000;
+            color: #fff;
+            font-size: 28px;
+            font-weight: 500;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-align: center;
+            white-space: pre-wrap;
+            word-break: break-word;
+            max-width: 90%;
+            display: inline-block;
+        }
+
+        .footer {
+            padding: 4px 4px 0 4px;
+            display: flex;
+            justify-content: flex-end;
+            flex-shrink: 0;
+        }
+
+        .footer-info {
+            color: #5e6f7e;
+            font-size: 12px;
+            cursor: default;
+        }
+
+        
+
+        
+
+        
+
+        .modal-box h3 {
+            color: #e8edf2;
+            margin-bottom: 2px;
+        }
+
+        .modal-box .sub {
+            color: #5e6f7e;
+            font-size: 12px;
+            margin-bottom: 14px;
+        }
+
+        .modal-box label {
+            color: #8e9aa5;
+            font-size: 12px;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .modal-box input {
+            width: 100%;
+            padding: 8px 12px;
+            background: #333333;
+            border: none;
+            border-radius: 8px;
+            color: #e8edf2;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .modal-box input:focus {
+            outline: none;
+        }
+
+        .modal-box .btn-row {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .modal-box .btn-row button {
+            padding: 6px 16px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .modal-box .btn-cancel {
+            background: #333333;
+            color: #8e9aa5;
+        }
+
+        .modal-box .btn-save {
+            background: #3a3a3a;
+            color: #e8edf2;
+        }
+
+        @media (max-width: 440px) {
+            .app {
+                padding: 4px;
+                max-height: 100vh;
+                height: 100vh;
+            }
+
+            .toolbar {
+                padding: 4px 6px;
+                gap: 2px;
+            }
+
+            .menu-section {
+                padding: 0 2px;
+            }
+
+            .menu-label {
+                font-size: 9px;
+                display: none;
+            }
+
+            .menu-btn {
+                font-size: 12px;
+                padding: 2px 6px;
+            }
+
+            .menu-range {
+                width: 40px;
+            }
+
+            .sub-text {
+                font-size: 20px;
+                padding: 8px 16px;
+            }
+        }
+    </style>
+    <style>
+/* ===== INLINED modal.css ===== */
+/* shared/modal.css — one modal look for all apps */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+.modal.active {
+    display: flex;
+}
+.modal-box {
+    background: #262626;
+    padding: 24px;
+    border-radius: 16px;
+    max-width: 340px;
+    width: 90%;
+    border: 1px solid #333333;
+    color: #e8edf2;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+.modal-box h3 {
+    color: #e8edf2;
+    margin: 0 0 6px 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+.modal-box .sub {
+    color: #5e6f7e;
+    font-size: 12px;
+    margin-bottom: 14px;
+}
+.modal-box label {
+    color: #8e9aa5;
+    font-size: 13px;
+    display: block;
+    margin: 8px 0;
+    cursor: pointer;
+}
+.modal-box input[type="text"],
+.modal-box input[type="number"] {
+    width: 100%;
+    padding: 8px 12px;
+    background: #333333;
+    border: none;
+    border-radius: 8px;
+    color: #e8edf2;
+    margin-bottom: 12px;
+    font-size: 14px;
+    outline: none;
+}
+.modal-box input[type="checkbox"] {
+    width: auto;
+    margin-right: 8px;
+    accent-color: #2b5278;
+}
+.modal-box .btn-row {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 16px;
+}
+.modal-box .btn-row button {
+    padding: 6px 16px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 13px;
+}
+.modal-box .btn-cancel {
+    background: #333333;
+    color: #8e9aa5;
+}
+.modal-box .btn-save {
+    background: #2b5278;
+    color: #e8edf2;
+}
+
+</style>
+</head>
+
+<body>
+
+    <div class="app">
+        <div class="sub-wrap">
+            <div class="sub-text" id="display"></div>
+        </div>
+
+        <div class="toolbar" id="toolbar"></div>
+        <div class="textbox-area">
+            <textarea id="inputText" placeholder="Paste text with blank lines between subtitles"></textarea>
+        </div>
+
+    </div>
+
+                <script src="../shared/ui.js"></script>
+<script>
+/* ===== INLINED text.js ===== */
+// shared/text.js — shared text helpers (extracted verbatim from apps)
+// Apps must NOT redefine these locally.
+
+function splitByBlankLines(text) {
+    return text.split(/\n\s*\n/).filter(s => s.trim() !== '');
+}
+
+function splitBySeparator(text, sep) {
+    // sep is a string like '\n---\n'; kept explicit so Telegram and
+    // Subtitles/LED can use different delimiters without forking logic.
+    return text.split(sep).filter(s => s.trim() !== '');
+}
+
+function splitWords(text, n) {
+    const words = text.split(/\s+/).filter(w => w.length > 0);
+    const chunks = [];
+    for (let i = 0; i < words.length; i += n) {
+        chunks.push(words.slice(i, i + n).join(' '));
+    }
+    return chunks;
+}
+
+function toLower(text) {
+    let output = text.replace(/—/g, '-').replace(/–/g, '-').replace(/ -- /g, ' - ');
+    output = output.replace(/[""]/g, '"').replace(/['']/g, "'").replace(/[‚‛]/g, "'")
+        .replace(/[„“”]/g, '"').replace(/[’‘]/g, "'").replace(/[‹›]/g, "'")
+        .replace(/[«»]/g, '"');
+    const parts = output.split(/(\s+)/);
+    const result = [];
+    for (let i = 0; i < parts.length; i++) {
+        const p = parts[i];
+        if (!/[a-zA-Zа-яА-Я]/.test(p)) { result.push(p); continue; }
+        const latinOnly = p.replace(/[^a-zA-Z]/g, '');
+        const isLatinCaps = latinOnly.length >= 2 && latinOnly === latinOnly.toUpperCase();
+        const cyrOnly = p.replace(/[^а-яА-Я]/g, '');
+        const isCyrCaps = cyrOnly.length >= 2 && cyrOnly === cyrOnly.toUpperCase();
+        if (isLatinCaps || isCyrCaps) { result.push(p); continue; }
+        result.push(p.toLowerCase());
+    }
+    return result.join('');
+}
+
+function removePunctuation(text) {
+    return text.replace(/[^\w\s\n]/g, '');
+}
+
+function splitPunct(text) {
+    // Split on . , ! ? ; : only when followed by whitespace or end of string.
+    // Keeps URLs (https://...), times (10:30), decimals (1.5), etc. intact.
+    const chars = '. , ! ? ; :'.split(' ');
+    const punctClass = '.!?;:';
+    const lines = [];
+    let current = '';
+    for (let i = 0; i < text.length; i++) {
+        const c = text[i];
+        current += c;
+        if (punctClass.indexOf(c) !== -1) {
+            const next = text[i + 1];
+            if (next === undefined || /\s/.test(next)) {
+                lines.push(current);
+                current = '';
+            }
+        }
+    }
+    if (current) lines.push(current);
+    return lines.map(function (s) { return s.trim(); }).filter(function (s) { return s; });
+}
+
+function splitSentences(text) {
+    const result = [];
+    let start = 0;
+    let i = 0;
+    while (i < text.length) {
+        if (text[i] === '…' || (text[i] === '.' && text[i + 1] === '.' && text[i + 2] === '.')) {
+            const len = text[i] === '…' ? 1 : 3;
+            const next = text[i + len] || '';
+            if (next === ' ' || next === '\n' || next === '\t' || !next) {
+                result.push(text.slice(start, i + len));
+                start = i + len;
+                i += len;
+                continue;
+            }
+        }
+        if (text[i] === '.' || text[i] === '!' || text[i] === '?') {
+            const next = text[i + 1] || '';
+            if (next === ' ' || next === '\n' || next === '\t' || !next) {
+                result.push(text.slice(start, i + 1));
+                start = i + 1;
+            }
+        }
+        i++;
+    }
+    if (start < text.length) result.push(text.slice(start));
+    return result.length ? result : [text];
+}
+
+function applyLow(text, settings) {
+    let result = text;
+    if (settings.lowercase) result = toLower(result);
+    if (settings.noPunct) result = removePunctuation(result);
+    if (settings.oneLine) result = result.replace(/\s+/g, ' ').trim();
+    return result;
+}
+
+</script>
+        <script src="../shared/prep.js"></script>
+<script>
+        // ============================================================
+        // SUBTITLE MFV - Minimal Functional Version
+        // ============================================================
+
+        // STATE
+        const state = {
+            blocks: [],
+            idx: 0,
+            hasContent: false,
+            wpm: 250,
+            fontSize: 20,
+        };
+
+        // DOM REFS
+        const input = document.getElementById('inputText');
+        const display = document.getElementById('display');
+
+        // ============================================================
+        // PERSISTENCE (localStorage)
+        // ============================================================
+        var STORE_KEY = 'subtitles_mfv_v1';
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORE_KEY, JSON.stringify({
+                    script: input.value,
+                    idx: state.idx,
+                    wpm: state.wpm,
+                    fontSize: state.fontSize
+                }));
+            } catch (e) {}
+        }
+
+        function loadState() {
+            var raw;
+            try { raw = localStorage.getItem(STORE_KEY); } catch (e) { return false; }
+            if (!raw) return false;
+            var d;
+            try { d = JSON.parse(raw); } catch (e) { return false; }
+            if (!d) return false;
+
+            if (typeof d.script === 'string') input.value = d.script;
+            if (typeof d.wpm === 'number') state.wpm = d.wpm;
+            if (typeof d.fontSize === 'number') state.fontSize = d.fontSize;
+            if (typeof d.idx === 'number') state.idx = d.idx;
+            return true;
+        }
+
+        // HELPERS
+                var WRAP_WIDTH = 40;
+
+        // Split raw text into message blocks: blank lines first, then any
+        // dash-separator inside each block. Dash removed.
+        function splitBlocks(raw) {
+            var base = splitByBlankLines(raw);
+            var out = [];
+            for (var i = 0; i < base.length; i++) {
+                var parts = splitOnDashes(base[i]);
+                for (var j = 0; j < parts.length; j++) {
+                    if (parts[j]) out.push(parts[j]);
+                }
+            }
+            return out;
+        }
+
+        // ============================================================
+        // WAKE LOCK  (keep screen awake during playback)
+        // Tier 1: Screen Wake Lock API (Chromium/Safari)
+        // Tier 2: invisible looping muted video (Firefox fallback)
+        // ============================================================
+        var _wakeLock = null;
+        var _keepAliveVideo = null;
+
+        function _makeKeepAliveVideo() {
+            if (_keepAliveVideo) return _keepAliveVideo;
+            // 1x1 black webm, looping, muted. Embedded so no extra file.
+            // (tiny base64 webm; silent, <1KB)
+            var v = document.createElement('video');
+            v.setAttribute('playsinline', '');
+            v.muted = true;
+            v.loop = true;
+            v.style.position = 'fixed';
+            v.style.width = '1px';
+            v.style.height = '1px';
+            v.style.opacity = '0';
+            v.style.pointerEvents = 'none';
+            v.style.left = '-9999px';
+            v.src = 'data:video/webm;base64,GkXfo0AgQoaBAUL6mQEEQICAgIAAAABDhpB0AAAB9OHhAAAB4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHg';
+            document.body.appendChild(v);
+            _keepAliveVideo = v;
+            return v;
+        }
+
+        function startWakeLock() {
+            // Tier 1
+            if (navigator.wakeLock && navigator.wakeLock.request) {
+                navigator.wakeLock.request('screen').then(function (wl) {
+                    _wakeLock = wl;
+                    wl.addEventListener('release', function () { _wakeLock = null; });
+                }).catch(function () {
+                    // fall through to tier 2
+                    _startKeepAliveVideo();
+                });
+                return;
+            }
+            // Tier 2
+            _startKeepAliveVideo();
+        }
+
+        function _startKeepAliveVideo() {
+            var v = _makeKeepAliveVideo();
+            var p = v.play();
+            if (p && p.catch) p.catch(function () { /* autoplay blocked; nothing else we can do */ });
+        }
+
+        function stopWakeLock() {
+            if (_wakeLock) {
+                try { _wakeLock.release(); } catch (e) {}
+                _wakeLock = null;
+            }
+            if (_keepAliveVideo) {
+                try { _keepAliveVideo.pause(); } catch (e) {}
+            }
+        }
+
+        function wrapText(t) {
+            return t.split('\n').map(function (line) {
+                var words = line.split(/\s+/).filter(Boolean);
+                var out = [], cur = '';
+                for (var i = 0; i < words.length; i++) {
+                    var w = words[i];
+                    if (cur && (cur + ' ' + w).length > WRAP_WIDTH) { out.push(cur); cur = w; }
+                    else { cur = cur ? cur + ' ' + w : w; }
+                }
+                if (cur) out.push(cur);
+                return out.join('\n');
+            }).join('\n');
+        }
+
+        function getDelay(item) {
+            var chars = item ? item.length : 0;
+            var words = Math.max(chars / 5, 1);
+            var msPerWord = 60000 / state.wpm;
+
+            // Reading time based on word count
+            var readingTime = words * msPerWord;
+
+            // Base pause: longer messages get slightly longer pause
+            // Minimum 300ms, scales with message length, capped at 1200ms
+            var basePause = 300 + (words * 10);
+            basePause = Math.min(basePause, 1200);
+
+            // Punctuation adds extra pause
+            var punctPause = 0;
+            if (item && /[.!?]$/.test(item)) {
+                punctPause = 200 + Math.random() * 200;
+            } else if (item && /[,;:]$/.test(item)) {
+                punctPause = 100 + Math.random() * 100;
+            }
+
+            var delay = readingTime + basePause + punctPause;
+
+            // Natural variation
+            delay *= (0.85 + Math.random() * 0.3);
+
+            // Clamp
+            delay = Math.max(delay, 800);
+            delay = Math.min(delay, 15000);
+            return delay;
+        }
+
+        // FONT
+        function applyFontSize() {
+            display.style.fontSize = state.fontSize + 'px';
+            var label = document.getElementById('sizeLabel');
+            if (label) label.textContent = state.fontSize + 'px';
+        }
+
+        function fontIncrease() {
+            state.fontSize = Math.min(state.fontSize + 2, 60);
+            applyFontSize();
+            saveState();
+        }
+        function fontDecrease() {
+            state.fontSize = Math.max(state.fontSize - 2, 10);
+            applyFontSize();
+            saveState();
+        }
+
+        // SUBTITLE FUNCTIONS
+        function render() {
+            if (!state.blocks.length || !state.hasContent) {
+                display.textContent = '';
+                return;
+            }
+            if (state.idx >= state.blocks.length) state.idx = state.blocks.length - 1;
+            if (state.idx < 0) state.idx = 0;
+            display.textContent = wrapText(state.blocks[state.idx]);
+            applyFontSize();
+            saveState();
+        }
+
+        function loadFromTextbox() {
+            if (autoPlay && autoPlay.isPlaying()) {
+                autoPlay.stopPlay();
+            }
+            var raw = input.value;
+            state.blocks = splitBlocks(raw);
+            state.hasContent = state.blocks.length > 0;
+            state.idx = 0;
+            render();
+        }
+
+        function triggerLoad() {
+            if (!state.hasContent || state.blocks.length === 0) loadFromTextbox();
+            render();
+        }
+
+        // AUTO-PLAY
+        var autoPlay = {
+            _playing: false,
+            _timer: null,
+            _queue: [],
+            _currentIdx: 0,
+
+            isPlaying: function () { return this._playing; },
+
+            stopPlay: function () {
+                this._playing = false;
+                if (this._timer) { clearTimeout(this._timer); this._timer = null; }
+                stopWakeLock();
+                var btn = document.getElementById('playBtn');
+                if (btn) btn.textContent = '▶';
+                state.idx = this._currentIdx;
+            },
+
+            startPlay: function () {
+                if (this._playing) return;
+                var items = state.blocks;
+                if (!items.length) {
+                    loadFromTextbox();
+                    items = state.blocks;
+                    if (!items.length) return;
+                }
+
+                this._playing = true;
+                startWakeLock();
+                var btn = document.getElementById('playBtn');
+                if (btn) btn.textContent = '⏹';
+
+                var startIdx = state.idx;
+                if (startIdx >= items.length) {
+                    startIdx = 0;
+                    state.idx = 0;
+                }
+
+                this._currentIdx = startIdx;
+                var remaining = items.slice(startIdx);
+                if (!remaining.length) {
+                    this.stopPlay();
+                    return;
+                }
+
+                var self = this;
+                var idx = 0;
+
+                var playNext = function () {
+                    if (!self._playing) return;
+                    if (idx < remaining.length) {
+                        var item = remaining[idx];
+                        display.textContent = wrapText(item);
+                        applyFontSize();
+                        self._currentIdx = startIdx + idx;
+                        state.idx = self._currentIdx;
+                        idx++;
+                        // Delay is for the CURRENT message (time to read it)
+                        // If there are more messages, schedule next after this delay
+                        if (idx < remaining.length) {
+                            self._timer = setTimeout(playNext, getDelay(item));
+                        } else {
+                            // Last message - show it and stop after its delay
+                            self._timer = setTimeout(function () {
+                                self.stopPlay();
+                            }, getDelay(item));
+                        }
+                    } else {
+                        self.stopPlay();
+                    }
+                };
+
+                // Start with first message immediately, delay comes from playNext
+                var firstItem = remaining[0];
+                display.textContent = wrapText(firstItem);
+                applyFontSize();
+                self._currentIdx = startIdx;
+                state.idx = startIdx;
+                idx = 1;
+                // Schedule next message after current message's delay
+                if (remaining.length > 1) {
+                    this._timer = setTimeout(playNext, getDelay(firstItem));
+                } else {
+                    // Only one message - show it and stop after delay
+                    this._timer = setTimeout(function () {
+                        self.stopPlay();
+                    }, getDelay(firstItem));
+                }
+            }
+        };
+
+        // FORMATTERS
+                                // LOW POPUP
+        var lowPopupInstance = null;
+
+                // CHUNKING
+                // BUILD MENU
+        function buildMenu() {
+            var toolbar = document.getElementById('toolbar');
+            toolbar.innerHTML =
+                '<div class="menu-section">' +
+                '   <span class="menu-label">PREP</span>' +
+                '   <button class="menu-btn" id="lowBtn">low</button>' +
+                '   <button class="menu-btn" id="punctBtn">punct</button>' +
+                '   <button class="menu-btn" id="sentBtn">sentences</button>' +
+                '</div>' +
+                '<div class="menu-section">' +
+                '   <span class="menu-label">CHUNK words:</span>' +
+                '   <input type="number" id="wordCountInput" value="3" min="1" style="width:48px;padding:2px 12px 2px 8px;background:#333333;border:none;border-radius:4px;color:#e8edf2;font-size:12px;text-align:center;">' +
+                '   <button class="menu-btn" id="applyBtn">apply</button>' +
+                '</div>' +
+                '<div class="menu-section">' +
+                '   <span class="menu-label">FONT</span>' +
+                '   <button class="menu-btn" id="fontSmall">A−</button>' +
+                '   <span class="menu-label-display" id="sizeLabel">20px</span>' +
+                '   <button class="menu-btn" id="fontBig">A+</button>' +
+                '</div>' +
+                '<div class="menu-section">' +
+                '   <span class="menu-label">PLAY</span>' +
+                '   <button class="menu-btn" id="playBtn">▶</button>' +
+                '   <button class="menu-btn" id="slowerBtn">🐢−</button>' +
+                '   <input type="range" class="menu-range" id="speedSlider" min="50" max="700" step="25" value="250">' +
+                '   <button class="menu-btn" id="fasterBtn">🐇+</button>' +
+                '   <span class="menu-label-display" id="speedValue" >250 WPM</span>' +
+                '</div>';
+        }
+
+        // MENU EVENTS
+        function initMenu() {
+            // Helper to stop autoplay on any control click
+            function stopPlayOnControl() {
+                if (autoPlay && autoPlay.isPlaying()) {
+                    autoPlay.stopPlay();
+                }
+            }
+
+            document.getElementById('fontSmall').onclick = function () {
+                // Font change does NOT stop autoplay
+                fontDecrease();
+            };
+            document.getElementById('fontBig').onclick = function () {
+                // Font change does NOT stop autoplay
+                fontIncrease();
+            };
+            document.getElementById('lowBtn').onclick = function () {
+                stopPlayOnControl();
+                showLowPopup(input, '\n\n');
+                // after apply, refresh blocks and display
+                var poll = setInterval(function () {
+                    if (!document.getElementById('__lowPopup')) {
+                        clearInterval(poll);
+                        state.blocks = splitBlocks(input.value);
+                        state.hasContent = state.blocks.length > 0;
+                        state.idx = 0;
+                        render();
+                    }
+                }, 50);
+            };
+            document.getElementById('punctBtn').onclick = function () {
+                stopPlayOnControl();
+                showPunctPopup(input, '\n\n', splitBlocks);
+                var poll = setInterval(function () {
+                    if (!document.getElementById('__punctPopup')) {
+                        clearInterval(poll);
+                        state.blocks = splitBlocks(input.value);
+                        state.hasContent = state.blocks.length > 0;
+                        state.idx = 0;
+                        render();
+                    }
+                }, 50);
+            };
+            document.getElementById('sentBtn').onclick = function () {
+                stopPlayOnControl();
+                var raw = input.value;
+                var blocks = [];
+                var baseBlocks = splitBlocks(raw);
+                for (var b = 0; b < baseBlocks.length; b++) {
+                    var parts = splitSentences(baseBlocks[b]);
+                    for (var i = 0; i < parts.length; i++) { blocks.push(parts[i]); }
+                }
+                if (blocks.length) {
+                    var mapped = [];
+                    for (var i = 0; i < blocks.length; i++) {
+                        mapped.push(blocks[i].trim());
+                    }
+                    input.value = mapped.join('\n\n');
+                    state.blocks = mapped;
+                    state.hasContent = true;
+                    state.idx = 0;
+                    render();
+                }
+            };
+            document.getElementById('applyBtn').onclick = function () {
+                stopPlayOnControl();
+                // chunk each block from splitBlocks, join with \n\n
+                var n = parseInt(document.getElementById('wordCountInput').value) || 3;
+                var base = splitBlocks(input.value);
+                var out = [];
+                for (var b = 0; b < base.length; b++) {
+                    var chunks = splitWords(base[b], n);
+                    for (var i = 0; i < chunks.length; i++) {
+                        if (chunks[i].trim()) out.push(chunks[i]);
+                    }
+                }
+                if (out.length) input.value = out.join('\n\n');
+                state.blocks = splitBlocks(input.value);
+                state.hasContent = state.blocks.length > 0;
+                state.idx = 0;
+                render();
+            };
+
+            var speedSlider = document.getElementById('speedSlider');
+            var speedValue = document.getElementById('speedValue');
+            document.getElementById('slowerBtn').onclick = function () {
+                // Speed change does NOT stop autoplay
+                state.wpm = Math.max(state.wpm - 25, 50);
+                speedSlider.value = state.wpm;
+                speedValue.textContent = state.wpm + ' WPM';
+                saveState();
+            };
+            document.getElementById('fasterBtn').onclick = function () {
+                // Speed change does NOT stop autoplay
+                state.wpm = Math.min(state.wpm + 25, 700);
+                speedSlider.value = state.wpm;
+                speedValue.textContent = state.wpm + ' WPM';
+                saveState();
+            };
+            speedSlider.oninput = function (e) {
+                // Speed change does NOT stop autoplay
+                state.wpm = parseInt(e.target.value);
+                speedValue.textContent = state.wpm + ' WPM';
+                saveState();
+            };
+            speedValue.textContent = state.wpm + ' WPM';
+
+            document.getElementById('playBtn').onclick = function () {
+                if (autoPlay.isPlaying()) autoPlay.stopPlay();
+                else autoPlay.startPlay();
+            };
+        }
+
+        // KEYBOARD SHORTCUTS
+        document.addEventListener('keydown', function (e) {
+            if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+            if (e.key === ' ' || e.key === 'Space' || e.code === 'Space') {
+                e.preventDefault();
+                var btn = document.getElementById('playBtn');
+                if (btn) btn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') {
+                // let Ctrl+R / Cmd+R fall through to the browser (reload)
+                if (e.ctrlKey || e.metaKey) return;
+                e.preventDefault();
+                state.idx = 0;
+                loadFromTextbox();
+            }
+            if (e.key === 'f' || e.key === 'F') {
+                e.preventDefault();
+                input.focus();
+                input.select();
+            }
+        });
+
+        // NAVIGATION - Arrow keys (STOP autoplay)
+        document.addEventListener('keydown', function (e) {
+            if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') return;
+            var items = state.blocks;
+            if (!items.length) return;
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                // let Alt+Arrow fall through to the browser (back/forward)
+                if (e.altKey) return;
+                e.preventDefault();
+                // Stop autoplay when user navigates manually
+                if (autoPlay && autoPlay.isPlaying()) {
+                    autoPlay.stopPlay();
+                }
+                if (e.key === 'ArrowLeft') {
+                    state.idx = Math.max(0, state.idx - 1);
+                } else {
+                    state.idx = Math.min(items.length - 1, state.idx + 1);
+                }
+                render();
+            }
+        });
+
+        // TEXTBOX AUTO-UPDATE
+        input.oninput = function () {
+            var raw = this.value;
+            state.blocks = splitBlocks(raw);
+            state.hasContent = state.blocks.length > 0;
+            state.idx = 0;
+            // DON'T render automatically - wait for control click
+            // Display stays showing current subtitle until user acts
+            saveState();
+        };
+
+        
+    // Reorganize menu - move prep/chunk to bottom
+        
+    // Call reorganization after menu is built
+    buildMenu();
+    reorganizeMenu();
+        initMenu();
+        var __restored = loadState();
+        if (__restored) {
+            // rebuild blocks from restored script
+            state.blocks = splitBlocks(input.value);
+            state.hasContent = state.blocks.length > 0;
+            if (state.idx >= state.blocks.length) state.idx = Math.max(0, state.blocks.length - 1);
+            // sync speed slider label
+            var sv = document.getElementById('speedValue');
+            var ss = document.getElementById('speedSlider');
+            if (sv) sv.textContent = state.wpm + ' WPM';
+            if (ss) ss.value = state.wpm;
+        } else {
+            loadFromTextbox();
+        }
+        applyFontSize();
+        render();
+    </script>
+        <script src="../shared/bridge.js"></script>
+</body>
+
+</html>
